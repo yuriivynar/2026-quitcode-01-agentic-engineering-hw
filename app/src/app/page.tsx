@@ -1,69 +1,102 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { PHeading, PSpinner, PText } from '@porsche-design-system/components-react/ssr';
+import { ActiveTaskPanel } from '@/components/ActiveTaskPanel';
+import { ActivityHistory } from '@/components/ActivityHistory';
+import { DailySummary } from '@/components/DailySummary';
+import { QuickAddTask } from '@/components/QuickAddTask';
+import { ResetDataButton } from '@/components/ResetDataButton';
+import { TaskList } from '@/components/TaskList';
+import { useTracker } from '@/lib/useTracker';
+import { formatDay, formatDuration } from '@/lib/time';
 
 export default function Home() {
+  const tracker = useTracker();
+  const { today, hydrated } = tracker;
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="page">
+      <header className="page__header">
+        <div className="page__headerText">
+          <PHeading tag="h1" size="large">
+            Workday Time Tracker
+          </PHeading>
+          {/* Rendered only after hydration: the date and totals come from
+              localStorage, which the server cannot know. */}
+          <PText size="small" color="contrast-medium">
+            {hydrated ? formatDay(tracker.now) : ' '}
+          </PText>
+        </div>
+        <ResetDataButton
+          onConfirm={tracker.reset}
+          disabled={!hydrated || tracker.state.tasks.length === 0}
         />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </header>
+
+      {!hydrated ? (
+        <section className="panel" aria-busy="true">
+          <PSpinner size="medium" aria={{ 'aria-label': 'Loading your tracked time' }} />
+        </section>
+      ) : (
+        <>
+          <ActiveTaskPanel
+            task={tracker.runningTask}
+            elapsed={tracker.runningElapsed}
+            startedAt={tracker.runningSince}
+            onPause={tracker.pause}
+            onComplete={tracker.completeTask}
+          />
+
+          <section className="panel">
+            <QuickAddTask onAdd={tracker.addTask} />
+          </section>
+
+          <div className="columns">
+            <section className="panel">
+              <div className="panel__head">
+                <PHeading tag="h2" size="small">
+                  Today&apos;s tasks
+                </PHeading>
+                <PText size="small" color="contrast-medium">
+                  {today.tasks.length} {today.tasks.length === 1 ? 'task' : 'tasks'}
+                </PText>
+              </div>
+              <TaskList
+                tasks={today.tasks}
+                statusOf={tracker.statusOf}
+                elapsedOf={tracker.elapsedOf}
+                onStart={tracker.startTask}
+                onPause={tracker.pause}
+                onComplete={tracker.completeTask}
+              />
+            </section>
+
+            <section className="panel">
+              <div className="panel__head">
+                <PHeading tag="h2" size="small">
+                  Daily summary
+                </PHeading>
+                <PText size="small" color="contrast-medium" className="numeric">
+                  {formatDuration(today.tracked)}
+                </PText>
+              </div>
+              <DailySummary totals={today.totals} tracked={today.tracked} />
+            </section>
+          </div>
+
+          <section className="panel">
+            <div className="panel__head">
+              <PHeading tag="h2" size="small">
+                Activity history
+              </PHeading>
+              <PText size="small" color="contrast-medium">
+                {today.sessions.length} {today.sessions.length === 1 ? 'session' : 'sessions'} today
+              </PText>
+            </div>
+            <ActivityHistory sessions={today.sessions} tasks={tracker.state.tasks} now={tracker.now} />
+          </section>
+        </>
+      )}
+    </main>
   );
 }

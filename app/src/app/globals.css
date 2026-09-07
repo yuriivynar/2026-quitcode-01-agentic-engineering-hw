@@ -1,49 +1,226 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html {
-  height: 100%;
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+/*
+ * Layout only. Every value comes from a PDS design token, which is the
+ * documented pure-CSS approach for arranging components and building the
+ * surfaces the component library does not ship — so custom markup shares the
+ * exact palette, spacing and typography as the PDS components it sits next to,
+ * and follows the light/dark color-scheme with them.
+ */
 
 body {
-  min-height: 100%;
+  margin: 0;
+  background: var(--p-color-canvas);
+  min-height: 100dvh;
+}
+
+.page {
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: var(--p-spacing-fluid-lg) var(--p-spacing-fluid-md) var(--p-spacing-fluid-2xl);
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  gap: var(--p-spacing-fluid-md);
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+.page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--p-spacing-static-md);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+.page__headerText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-spacing-static-2xs);
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+/* --- Surfaces --------------------------------------------------------- */
+
+.panel {
+  background: var(--p-color-surface);
+  border-radius: var(--p-radius-lg);
+  padding: var(--p-spacing-fluid-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-spacing-static-md);
+}
+
+.panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-spacing-static-sm);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--p-spacing-fluid-md);
+  align-items: start;
+}
+
+@media (max-width: 60rem) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* --- Active task hero -------------------------------------------------- */
+
+.active {
+  background: var(--p-color-surface);
+  border-radius: var(--p-radius-lg);
+  padding: var(--p-spacing-fluid-md);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--p-spacing-fluid-sm);
+  /* A left rule is the cheapest running/idle signal that survives a glance. */
+  border-inline-start: 4px solid var(--p-color-contrast-low);
+  transition: border-color var(--p-duration-md) var(--p-ease-in-out);
+}
+
+.active--running {
+  border-inline-start-color: var(--p-color-success);
+}
+
+.active__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-spacing-static-xs);
+  min-width: 0;
+}
+
+.active__timer {
+  /* Tabular numerals keep the digits from jittering as the seconds tick. */
+  font-variant-numeric: tabular-nums;
+  font-size: var(--p-typescale-4xl);
+  font-weight: var(--p-font-weight-semibold);
+  line-height: 1.1;
+  color: var(--p-color-primary);
+}
+
+.active__timer--idle {
+  color: var(--p-color-contrast-medium);
+}
+
+.active__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--p-spacing-static-sm);
+}
+
+/* --- Quick add --------------------------------------------------------- */
+
+.quickAdd {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--p-spacing-static-sm);
+}
+
+.quickAdd__field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- Task list --------------------------------------------------------- */
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-spacing-static-xs);
+}
+
+.taskRow {
+  display: flex;
+  align-items: center;
+  gap: var(--p-spacing-static-sm);
+  padding: var(--p-spacing-static-sm);
+  border-radius: var(--p-radius-md);
+  background: var(--p-color-canvas);
+}
+
+.taskRow--running {
+  background: var(--p-color-success-low);
+}
+
+.taskRow__name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.taskRow__name--done {
+  text-decoration: line-through;
+  color: var(--p-color-contrast-medium);
+}
+
+.taskRow__time {
+  font-variant-numeric: tabular-nums;
+  color: var(--p-color-contrast-high);
+  white-space: nowrap;
+}
+
+.taskRow__actions {
+  display: flex;
+  gap: var(--p-spacing-static-xs);
+}
+
+/* --- Summary ----------------------------------------------------------- */
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-spacing-static-xs);
+}
+
+.summary__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-spacing-static-sm);
+}
+
+.summary__bar {
+  height: 4px;
+  border-radius: var(--p-radius-full);
+  background: var(--p-color-contrast-low);
+  margin-block: var(--p-spacing-static-2xs) var(--p-spacing-static-xs);
+}
+
+.summary__barFill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--p-color-primary);
+}
+
+.summary__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-spacing-static-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Misc -------------------------------------------------------------- */
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.modalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--p-spacing-static-sm);
+}
+
+.empty {
+  padding: var(--p-spacing-fluid-sm) 0;
 }

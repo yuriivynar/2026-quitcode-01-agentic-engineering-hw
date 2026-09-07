@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import { clearState, loadState, saveState } from './storage';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { dispatch, useIsHydrated, useTrackerState } from './trackerStore';
 import {
-  EMPTY_STATE,
   findOpenSession,
   findRunningTask,
   sessionsForDay,
@@ -12,7 +11,6 @@ import {
   taskStatus,
   totalsForDay,
   trackedTotalForDay,
-  trackerReducer,
 } from './tracker';
 import { createId } from './time';
 
@@ -21,30 +19,21 @@ const RUNNING_TICK_MS = 1_000;
 const IDLE_TICK_MS = 60_000;
 
 export function useTracker() {
-  const [state, dispatch] = useReducer(trackerReducer, EMPTY_STATE);
-
-  // localStorage is only readable after mount, so the first client render must
-  // match the server's empty render. `hydrated` gates the UI until then.
-  const [hydrated, setHydrated] = useState(false);
+  const state = useTrackerState();
+  const hydrated = useIsHydrated();
   const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    dispatch({ type: 'hydrate', state: loadState() });
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) saveState(state);
-  }, [state, hydrated]);
 
   const openSession = findOpenSession(state);
   const tickMs = openSession ? RUNNING_TICK_MS : IDLE_TICK_MS;
 
   useEffect(() => {
-    setNow(Date.now());
     const timer = setInterval(() => setNow(Date.now()), tickMs);
     return () => clearInterval(timer);
   }, [tickMs]);
+
+  // While idle, `now` is only used for day-bucketing — every elapsed total is
+  // made of closed sessions — so a stale value between slow ticks is harmless.
+  // Starting a task switches to the 1s tick, so the live timer is never stale.
 
   const addTask = useCallback((name: string) => {
     const trimmed = name.trim();
@@ -54,6 +43,7 @@ export function useTracker() {
 
   const startTask = useCallback((taskId: string) => {
     dispatch({ type: 'start', taskId, sessionId: createId(), now: Date.now() });
+    setNow(Date.now());
   }, []);
 
   const pause = useCallback(() => {
@@ -65,7 +55,6 @@ export function useTracker() {
   }, []);
 
   const reset = useCallback(() => {
-    clearState();
     dispatch({ type: 'reset' });
   }, []);
 

@@ -37,7 +37,13 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
-      - run: npm ci
+      # The lockfile is generated on Windows, so npm never resolved the
+      # linux/wasm32 optional deps of sharp into it. The static export sets
+      # images.unoptimized, so sharp is not used at all here - skipping
+      # optional deps sidesteps the whole class of problem. The fallback keeps
+      # the demo deploy green if the lockfile drifts again.
+      - name: Install dependencies
+        run: npm ci --omit=optional || npm install --no-audit --no-fund
 
       - name: Build static export
         run: npm run build

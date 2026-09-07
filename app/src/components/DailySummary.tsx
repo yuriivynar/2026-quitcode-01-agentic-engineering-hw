@@ -1,7 +1,7 @@
 'use client';
 
 import { PDivider, PText } from '@porsche-design-system/components-react/ssr';
-import { formatDuration, formatDurationCompact } from '@/lib/time';
+import { formatDecimalHours, formatDuration } from '@/lib/time';
 import type { Task } from '@/lib/types';
 
 type Props = {
@@ -28,8 +28,13 @@ export function DailySummary({ totals, tracked }: Props) {
         <div key={task.id}>
           <div className="summary__row">
             <PText size="small">{task.name}</PText>
+            {/* Decimal hours are what timesheets and invoices want; the exact
+                HH:MM:SS stays available on hover. */}
             <PText size="small" color="contrast-high" className="numeric">
-              {formatDurationCompact(total)}
+              <span title={formatDuration(total)}>
+                {formatDecimalHours(total)}
+                <span className="summary__unit"> h</span>
+              </span>
             </PText>
           </div>
           <div
@@ -49,7 +54,12 @@ export function DailySummary({ totals, tracked }: Props) {
 
       <div className="summary__total">
         <PText weight="semibold">Total tracked</PText>
-        <PText weight="semibold">{formatDuration(tracked)}</PText>
+        <PText weight="semibold">
+          <span title={formatDuration(tracked)}>
+            {formatDecimalHours(tracked)}
+            <span className="summary__unit"> h</span>
+          </span>
+        </PText>
       </div>
     </div>
   );

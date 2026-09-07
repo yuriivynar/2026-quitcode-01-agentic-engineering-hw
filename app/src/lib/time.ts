@@ -20,6 +20,14 @@ export function formatDurationCompact(ms: number): string {
   return totalMinutes > 0 ? `${minutes}m` : '< 1m';
 }
 
+/**
+ * Hours as a decimal, the way timesheets and invoices express them:
+ * 2h 30m becomes `2.50`. Rounded to two places, so a day of short sessions
+ * still adds up close to the true total.
+ */
+export function formatDecimalHours(ms: number): string {
+  return (Math.max(0, ms) / 3_600_000).toFixed(2);
+}
 /** Wall-clock time of day, e.g. `09:41`. */
 export function formatClock(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -33,6 +41,13 @@ export function formatDay(timestamp: number): string {
   });
 }
 
+/** `Today` / `Yesterday` / `Friday, 5 September` for history day headings. */
+export function formatDayLabel(timestamp: number, now: number): string {
+  const days = Math.round((startOfDay(now) - startOfDay(timestamp)) / 86_400_000);
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  return formatDay(timestamp);
+}
 export function startOfDay(timestamp: number): number {
   const date = new Date(timestamp);
   date.setHours(0, 0, 0, 0);

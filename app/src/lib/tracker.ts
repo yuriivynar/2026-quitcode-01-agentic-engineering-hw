@@ -29,6 +29,22 @@ export function taskElapsed(state: TrackerState, taskId: string, now: number): n
     .reduce((total, session) => total + sessionDuration(session, now), 0);
 }
 
+/**
+ * Time on a task within one day. The whole app is day-scoped - the task list
+ * sits under a "Today" heading next to a daily summary - so a task worked on
+ * across several days must not show its all-time total there, or the two
+ * panels visibly disagree.
+ */
+export function taskElapsedForDay(
+  state: TrackerState,
+  taskId: string,
+  day: number,
+  now: number,
+): number {
+  return sessionsForDay(state, day)
+    .filter((session) => session.taskId === taskId)
+    .reduce((total, session) => total + sessionDuration(session, now), 0);
+}
 export function taskStatus(state: TrackerState, taskId: string): TaskStatus {
   const task = state.tasks.find((candidate) => candidate.id === taskId);
   if (!task) return 'idle';
@@ -87,6 +103,28 @@ export function totalsForDay(
     .sort((a, b) => b.total - a.total);
 }
 
+/**
+ * Every session grouped into the day it started on, newest day first and
+ * newest session first within a day. Grouping by start (rather than splitting
+ * at midnight) keeps a session that runs past midnight in one piece.
+ */
+export function sessionsByDay(state: TrackerState): { day: number; sessions: Session[] }[] {
+  const groups = new Map<number, Session[]>();
+
+  for (const session of state.sessions) {
+    const day = startOfDayMs(session.startedAt);
+    const bucket = groups.get(day);
+    if (bucket) bucket.push(session);
+    else groups.set(day, [session]);
+  }
+
+  return [...groups.entries()]
+    .map(([day, sessions]) => ({
+      day,
+      sessions: [...sessions].sort((a, b) => b.startedAt - a.startedAt),
+    }))
+    .sort((a, b) => b.day - a.day);
+}
 export function trackedTotalForDay(state: TrackerState, day: number, now: number): number {
   return sessionsForDay(state, day).reduce(
     (total, session) => total + sessionDuration(session, now),

@@ -226,3 +226,39 @@ body {
 .empty {
   padding: var(--p-spacing-fluid-sm) 0;
 }
+
+/* --- Header actions ---------------------------------------------------- */
+
+.page__headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--p-spacing-static-md);
+}
+
+/* --- Grouped history --------------------------------------------------- */
+
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-spacing-fluid-sm);
+}
+
+.history__day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-spacing-static-xs);
+}
+
+.history__dayHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--p-spacing-static-sm);
+}
+
+/* Decimal hours read better when the unit is quieter than the number. */
+.summary__unit {
+  color: var(--p-color-contrast-medium);
+}

@@ -1,5 +1,7 @@
 # Workday Time Tracker
 
+**Live:** https://yuriivynar.github.io/2026-quitcode-01-agentic-engineering-hw/
+
 A small personal tool for tracking how a workday is actually spent. Type a task
 name, press Start, and the clock runs until you pause it, finish it, or start
 something else.
@@ -28,8 +30,12 @@ CDN at runtime, so the first render needs a network connection.
   start time.
 - **Today's tasks** with per-task totals and a derived status
   (`Not started` / `Running` / `Paused` / `Done`).
-- **Daily summary** — time per task, plus the day's total.
-- **Activity history** — every session today with start, end, task and duration.
+- **Daily summary** — time per task plus the day's total, in **decimal hours**
+  (`2.50 h`), the way timesheets and invoices want them; hover for HH:MM:SS.
+- **Activity history grouped by date** — `Today` / `Yesterday` / the weekday,
+  each day with its own session table and day total.
+- **Theme switch** — System / Light / Dark, remembered between visits and
+  applied before first paint so there is no flash.
 - **Persistent** — tasks, sessions and the running timer survive a refresh.
 - **Clear data** behind a confirmation dialog.
 
@@ -74,6 +80,8 @@ range per task.
 | `src/lib/trackerStore.ts` | `useSyncExternalStore` bridge to `localStorage` |
 | `src/lib/useTracker.ts` | the hook the UI talks to, plus the tick |
 | `src/lib/time.ts` | duration/clock formatting |
+| `src/lib/theme.ts` | scheme classes + the pre-paint init script |
+| `src/lib/themeStore.ts` | `useSyncExternalStore` bridge for the theme choice |
 | `src/components/` | one component per panel |
 
 `tracker.ts` is deliberately free of React and of imports with runtime side
@@ -82,6 +90,9 @@ effects, so the timer rules can be exercised directly.
 ## Notes
 
 - Sessions belong to the day they *started* on, so a task running past midnight
+- Every figure on the page is scoped to **one day**: a task worked on across
+  several days shows today's time in the task list, not its all-time total,
+  so the task list and the daily summary can never disagree.
   stays in one piece instead of being split across two days.
 - The clock ticks once a second while a task is running and once a minute while
   idle — idle totals are made only of closed sessions, so a slow tick costs

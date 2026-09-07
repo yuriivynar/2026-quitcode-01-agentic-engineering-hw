@@ -5,8 +5,9 @@ import { dispatch, useIsHydrated, useTrackerState } from './trackerStore';
 import {
   findOpenSession,
   findRunningTask,
+  sessionsByDay,
   sessionsForDay,
-  taskElapsed,
+  taskElapsedForDay,
   tasksForDay,
   taskStatus,
   totalsForDay,
@@ -68,6 +69,9 @@ export function useTracker() {
     [state, now],
   );
 
+  // The history spans every day; the summary and task list stay on today.
+  const history = useMemo(() => sessionsByDay(state), [state]);
+
   const runningTask = findRunningTask(state);
 
   return {
@@ -75,11 +79,12 @@ export function useTracker() {
     now,
     state,
     today,
+    history,
     runningTask,
     runningSince: openSession?.startedAt ?? null,
-    runningElapsed: runningTask ? taskElapsed(state, runningTask.id, now) : 0,
+    runningElapsed: runningTask ? taskElapsedForDay(state, runningTask.id, now, now) : 0,
     statusOf: (taskId: string) => taskStatus(state, taskId),
-    elapsedOf: (taskId: string) => taskElapsed(state, taskId, now),
+    elapsedOf: (taskId: string) => taskElapsedForDay(state, taskId, now, now),
     addTask,
     startTask,
     pause,

@@ -7,8 +7,9 @@ import { DailySummary } from '@/components/DailySummary';
 import { QuickAddTask } from '@/components/QuickAddTask';
 import { ResetDataButton } from '@/components/ResetDataButton';
 import { TaskList } from '@/components/TaskList';
+import { ThemeSwitch } from '@/components/ThemeSwitch';
 import { useTracker } from '@/lib/useTracker';
-import { formatDay, formatDuration } from '@/lib/time';
+import { formatDay, formatDecimalHours, formatDuration } from '@/lib/time';
 
 export default function Home() {
   const tracker = useTracker();
@@ -27,10 +28,13 @@ export default function Home() {
             {hydrated ? formatDay(tracker.now) : ' '}
           </PText>
         </div>
-        <ResetDataButton
-          onConfirm={tracker.reset}
-          disabled={!hydrated || tracker.state.tasks.length === 0}
-        />
+        <div className="page__headerActions">
+          <ThemeSwitch />
+          <ResetDataButton
+            onConfirm={tracker.reset}
+            disabled={!hydrated || tracker.state.tasks.length === 0}
+          />
+        </div>
       </header>
 
       {!hydrated ? (
@@ -77,7 +81,10 @@ export default function Home() {
                   Daily summary
                 </PHeading>
                 <PText size="small" color="contrast-medium" className="numeric">
-                  {formatDuration(today.tracked)}
+                  <span title={formatDuration(today.tracked)}>
+                    {formatDecimalHours(today.tracked)}
+                    <span className="summary__unit"> h</span>
+                  </span>
                 </PText>
               </div>
               <DailySummary totals={today.totals} tracked={today.tracked} />
@@ -90,10 +97,12 @@ export default function Home() {
                 Activity history
               </PHeading>
               <PText size="small" color="contrast-medium">
-                {today.sessions.length} {today.sessions.length === 1 ? 'session' : 'sessions'} today
+                {tracker.history.length === 1
+                  ? '1 day'
+                  : `${tracker.history.length} days`}
               </PText>
             </div>
-            <ActivityHistory sessions={today.sessions} tasks={tracker.state.tasks} now={tracker.now} />
+            <ActivityHistory days={tracker.history} tasks={tracker.state.tasks} now={tracker.now} />
           </section>
         </>
       )}

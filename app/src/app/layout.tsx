@@ -4,6 +4,7 @@ import { PorscheDesignSystemProvider } from '@porsche-design-system/components-r
 // motion from these CSS variables and will not render correctly without them.
 import '@porsche-design-system/components-react/index.css';
 import './globals.css';
+import { SCHEME_CLASS, DEFAULT_THEME, THEME_INIT_SCRIPT } from '@/lib/theme';
 
 export const metadata: Metadata = {
   title: 'Workday Time Tracker',
@@ -17,9 +18,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // `scheme-light-dark` is the whole PDS theming mechanism: it drives the CSS
-    // `color-scheme` property, so components and our own layout follow the OS.
-    <html lang="en" className="scheme-light-dark">
+    // One class on <html> is the whole PDS theming mechanism: it drives the CSS
+    // `color-scheme` property for the components and our own markup alike. The
+    // prerendered value is the default; the script below corrects it from
+    // localStorage before first paint, so a dark-mode user sees no white flash.
+    <html lang="en" className={SCHEME_CLASS[DEFAULT_THEME]} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
         <PorscheDesignSystemProvider>{children}</PorscheDesignSystemProvider>
       </body>

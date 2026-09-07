@@ -1,10 +1,6 @@
 # Publishes a static export of app/ to GitHub Pages so the tracker has a live
 # demo URL. Deliberately kept on this branch only, so the homework PR's diff
 # stays limited to the assignment itself.
-#
-# Prerequisite (one time, by the repo owner):
-#   Settings -> Pages -> Build and deployment -> Source: "GitHub Actions"
-# Until that is set, the deploy job fails with "Pages is not enabled".
 name: Deploy app to GitHub Pages
 
 on:
@@ -54,7 +50,11 @@ jobs:
       # Pages serves the artifact as-is; without this, Jekyll strips _next/.
       - run: touch out/.nojekyll
 
+      # enablement turns Pages on through the API using this workflow's own
+      # pages:write token, so no manual Settings -> Pages step is required.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: app/out

@@ -97,6 +97,7 @@ body {
 .active__timer {
   /* Tabular numerals keep the digits from jittering as the seconds tick. */
   font-variant-numeric: tabular-nums;
+  margin: 0;
   font-size: var(--p-typescale-4xl);
   font-weight: var(--p-font-weight-semibold);
   line-height: 1.1;
@@ -174,7 +175,7 @@ body {
 .summary {
   display: flex;
   flex-direction: column;
-  gap: var(--p-spacing-static-xs);
+  gap: var(--p-spacing-static-sm);
 }
 
 .summary__row {
@@ -187,8 +188,9 @@ body {
 .summary__bar {
   height: 4px;
   border-radius: var(--p-radius-full);
-  background: var(--p-color-contrast-low);
-  margin-block: var(--p-spacing-static-2xs) var(--p-spacing-static-xs);
+  background: var(--p-color-contrast-lower);
+  margin-block-start: var(--p-spacing-static-2xs);
+  overflow: hidden;
 }
 
 .summary__barFill {

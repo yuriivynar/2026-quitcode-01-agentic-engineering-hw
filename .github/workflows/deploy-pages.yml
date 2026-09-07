@@ -1,0 +1,64 @@
+# Publishes a static export of app/ to GitHub Pages so the tracker has a live
+# demo URL. Deliberately kept on this branch only, so the homework PR's diff
+# stays limited to the assignment itself.
+#
+# Prerequisite (one time, by the repo owner):
+#   Settings -> Pages -> Build and deployment -> Source: "GitHub Actions"
+# Until that is set, the deploy job fails with "Pages is not enabled".
+name: Deploy app to GitHub Pages
+
+on:
+  push:
+    branches: [deploy/github-pages]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - run: npm ci
+
+      - name: Build static export
+        run: npm run build
+        env:
+          # Turns on output: 'export' + basePath in next.config.ts.
+          GITHUB_PAGES: 'true'
+
+      # Pages serves the artifact as-is; without this, Jekyll strips _next/.
+      - run: touch out/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
